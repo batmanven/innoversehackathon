@@ -2,8 +2,8 @@ import { Settings, ScaleIcon } from "lucide-react";
 
 export function TopNav() {
   return (
-    <header className="sticky top-0 z-40 h-14 border-b border-border surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/70">
-      <div className="mx-auto flex h-full max-w-[1480px] items-center justify-between px-6">
+    <header className="sticky top-0 z-40 h-14 border-b border-border bg-background/80 backdrop-blur-md">
+      <div className="flex h-full w-full items-center justify-between px-6">
         {/* Left — wordmark */}
         <div className="flex items-center gap-2.5">
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/15 text-primary ring-1 ring-primary/30">
