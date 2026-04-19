@@ -1,73 +1,73 @@
-# React + TypeScript + Vite
+# LexiGuide AI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+LexiGuide is an advanced, AI-powered legal document copilot designed to automate document extraction, risk assessment, and clause analysis. By integrating Google Gemini's multimodal capabilities with a robust RAG (Retrieval-Augmented Generation) pipeline, LexiGuide provides professional-grade insights for legal and compliance workflows.
 
-Currently, two official plugins are available:
+Developed as a submission for the Innoverse Hackathon, the platform focuses on bridging the gap between complex legal jargon and actionable business intelligence.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Core Capabilities
 
-## React Compiler
+- **Intelligent Document Ingestion**: Seamless processing of PDF and DOCX files using high-fidelity extraction engines.
+- **Persona-Driven Analysis**: Contextual insights tailored for specific professional roles, including Contract Specialists, Compliance Officers, and General Counsel.
+- **Automated Clause Categorization**: Dynamic identification and grouping of critical clauses, rights, and obligations.
+- **Risk Identification Engine**: Specialized detection of high-impact liabilities, termination triggers, and adverse terms.
+- **Interactive Legal Copilot**: A grounded conversational interface allowing users to query document specifics using RAG.
+- **Multi-Language Support**: Complete analysis and semantic explanations available across multiple international languages.
+- **Professional Reporting**: Export detailed analysis results into structured Markdown reports for external documentation.
+- **Local Analytics Persistence**: Secure local storage of analysis history for rapid retrieval and offline review.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Architecture and Technology
 
-## Expanding the ESLint configuration
+The application is built with a focus on performance, scalability, and premium user experience.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Foundational Layer**: React 18 with Vite for a high-performance, typed development environment.
+- **AI Orchestration**: LangChain integration with Google Generative AI (Gemini 1.5 Series).
+- **Processing Pipeline**: PDF-parse and Mammoth for robust document-to-text conversion.
+- **Style Architecture**: Tailwind CSS and Radix UI primitives, featuring a responsive dashboard with adaptive layouts.
+- **State Management**: TanStack Query for efficient server-state synchronization and data fetching.
+- **Safety and Reliability**: Strict schema validation using Zod and comprehensive error handling across the AI pipeline.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Getting Started
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Prerequisites
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- Node.js version 18.0.0 or higher
+- npm or yarn package manager
+- A valid Google Gemini API Key
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Installation
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/batmanven/innoversehackathon.git
+   cd LexiGuide
+   ```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+2. Install the necessary dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Configure the environment variables:
+   Create a `.env` file in the root directory and define the following key:
+   ```env
+   VITE_GEMINI_API_KEY=your_api_key_here
+   ```
+
+4. Launch the application:
+   ```bash
+   npm run dev
+   ```
+
+## Development Workflow
+
+- **npm run dev**: Starts the local development server.
+- **npm run build**: Generates the production-ready bundle.
+- **npm run lint**: Executes ESLint for code quality checks.
+- **npm run test**: Runs the Vitest suite for unit and integration testing.
+
+## License
+
+This project is licensed under the MIT License.
+
+---
+Created for the Innoverse Hackathon.
