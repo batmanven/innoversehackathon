@@ -2,19 +2,20 @@ import { useCallback, useState } from "react";
 import type { QAEntry } from "@/types/lexiguide";
 import { pickMockAnswer } from "@/data/mock";
 
-export function useConversation() {
+export function useConversation(documentText?: string) {
   const [messages, setMessages] = useState<QAEntry[]>([]);
   const [isResponding, setIsResponding] = useState(false);
 
   const ask = useCallback(async (question: string) => {
     const trimmed = question.trim();
-    if (!trimmed) return;
+    if (!trimmed || !documentText) return;
 
     const userMsg: QAEntry = {
       id: `u-${Date.now()}`,
       role: "user",
       content: trimmed,
     };
+    
     const pendingId = `a-${Date.now() + 1}`;
     const pendingMsg: QAEntry = {
       id: pendingId,
@@ -22,21 +23,49 @@ export function useConversation() {
       content: "",
       pending: true,
     };
+    
     setMessages((prev) => [...prev, userMsg, pendingMsg]);
     setIsResponding(true);
 
-    // Simulate a short reply time. No fake streaming/sparkles.
-    await new Promise((r) => setTimeout(r, 650));
-    const answer = pickMockAnswer(trimmed);
-    setMessages((prev) =>
-      prev.map((m) =>
-        m.id === pendingId
-          ? { ...m, content: answer.content, references: answer.references, pending: false }
-          : m
-      )
-    );
-    setIsResponding(false);
-  }, []);
+    try {
+      const { chatAboutDocument } = await import("@/lib/chatWithAI");
+      
+      // Prepare history (excluding the current user/pending messages)
+      const history = messages.map(m => ({ 
+        role: m.role, 
+        content: m.content 
+      }));
+
+      const response = await chatAboutDocument(trimmed, documentText, history);
+
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === pendingId
+            ? { 
+                ...m, 
+                content: response.answer, 
+                references: response.references, 
+                pending: false 
+              }
+            : m
+        )
+      );
+    } catch (error) {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === pendingId
+            ? { 
+                ...m, 
+                content: "I'm sorry, I encountered an error while analyzing the document.", 
+                pending: false 
+              }
+            : m
+        )
+      );
+    } finally {
+      setIsResponding(false);
+    }
+  }, [documentText, messages]);
 
   const clear = useCallback(() => setMessages([]), []);
 

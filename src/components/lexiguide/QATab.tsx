@@ -4,10 +4,11 @@ import { ChatInput } from "./ChatInput";
 
 interface Props {
   suggestedQuestions: string[];
+  documentText: string;
 }
 
-export function QATab({ suggestedQuestions }: Props) {
-  const { messages, ask, isResponding } = useConversation();
+export function QATab({ suggestedQuestions, documentText }: Props) {
+  const { messages, ask, isResponding } = useConversation(documentText);
 
   return (
     <div className="flex h-[560px] flex-col overflow-hidden rounded-xl border border-border surface-2 animate-fade-up">

@@ -7,9 +7,10 @@ import { QATab } from "./QATab";
 
 interface Props {
   analysis: DocumentAnalysis;
+  documentText: string;
 }
 
-export function ExplanationTabs({ analysis }: Props) {
+export function ExplanationTabs({ analysis, documentText }: Props) {
   return (
     <Tabs defaultValue="summary" className="w-full">
       <TabsList className="grid h-10 w-full grid-cols-4 bg-surface-2 p-1">
@@ -37,7 +38,10 @@ export function ExplanationTabs({ analysis }: Props) {
         <ChecklistTab items={analysis.checklist} />
       </TabsContent>
       <TabsContent value="qa" className="mt-4">
-        <QATab suggestedQuestions={analysis.suggestedQuestions} />
+        <QATab 
+          suggestedQuestions={analysis.suggestedQuestions} 
+          documentText={documentText}
+        />
       </TabsContent>
     </Tabs>
   );

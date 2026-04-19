@@ -12,7 +12,7 @@ import { SAMPLE_ANALYSIS } from "@/data/mock";
 import { useAnalyzeDocument } from "@/hooks/useAnalyzeDocument";
 
 const Index = () => {
-  const { analysis, setAnalysis, analyze, isAnalyzing, reset } = useAnalyzeDocument();
+  const { analysis, documentText, setAnalysis, analyze, isAnalyzing, reset } = useAnalyzeDocument();
   const [showSidebar] = useState(true);
 
   const handleAnalyze = (input: {
@@ -85,7 +85,7 @@ const Index = () => {
 
                 <div className="grid gap-8 xl:grid-cols-[1fr_420px]">
                   <div className="min-w-0">
-                    <ExplanationTabs analysis={analysis} />
+                    <ExplanationTabs analysis={analysis} documentText={documentText} />
                   </div>
                   <div className="min-w-0 xl:sticky xl:top-0">
                     <DocumentPreview clauses={analysis.preview} />

@@ -15,24 +15,45 @@ export interface AnalyzeInput {
 
 export function useAnalyzeDocument() {
   const [analysis, setAnalysis] = useState<DocumentAnalysis | null>(null);
+  const [documentText, setDocumentText] = useState<string>("");
 
   const mutation = useMutation({
     mutationFn: async (input: AnalyzeInput): Promise<DocumentAnalysis> => {
-      // Simulate network + analysis latency.
-      await new Promise((r) => setTimeout(r, 900));
-      const base = SAMPLE_ANALYSIS;
-      const fileName = input.useSample
-        ? base.fileName
-        : input.fileName || input.file?.name || "Untitled document";
-      const fileSize = input.useSample
-        ? base.fileSize
-        : input.fileSize ||
-          (input.file ? `${Math.max(1, Math.round(input.file.size / 1024))} KB` : "—");
+      // 1. Handle Sample Data
+      if (input.useSample) {
+        await new Promise((r) => setTimeout(r, 600));
+        setDocumentText(""); // Reset for sample
+        return {
+          ...SAMPLE_ANALYSIS,
+          id: `sample-${Date.now()}`,
+          uploadedAt: "Just now",
+        };
+      }
+
+      if (!input.file) {
+        throw new Error("No file provided for analysis.");
+      }
+
+      // 2. Extract Text from File (PDF/DOCX/TXT)
+      const { extractText } = await import("@/lib/documentParser");
+      const { text, pageCount } = await extractText(input.file);
+      setDocumentText(text);
+
+      // 3. Analyze with Gemini AI
+      const { analyzeDocumentWithAI } = await import("@/lib/analyzeWithAI");
+      const result = await analyzeDocumentWithAI(
+        text,
+        input.persona,
+        input.language,
+        input.riskFocused
+      );
+
+      // 4. Transform to full DocumentAnalysis type
       return {
-        ...base,
+        ...result,
         id: `${Date.now()}`,
-        fileName,
-        fileSize,
+        fileName: input.file.name,
+        fileSize: `${Math.max(1, Math.round(input.file.size / 1024))} KB`,
         persona: input.persona,
         language: input.language,
         riskFocused: input.riskFocused,
@@ -44,11 +65,13 @@ export function useAnalyzeDocument() {
 
   const reset = useCallback(() => {
     setAnalysis(null);
+    setDocumentText("");
     mutation.reset();
   }, [mutation]);
 
   return {
     analysis,
+    documentText,
     setAnalysis,
     analyze: mutation.mutate,
     isAnalyzing: mutation.isPending,
