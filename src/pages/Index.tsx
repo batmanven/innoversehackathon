@@ -10,16 +10,34 @@ import { FeedbackBar } from "@/components/lexiguide/FeedbackBar";
 
 import type { Language, Persona, RecentDocument } from "@/types/lexiguide";
 import { useAnalyzeDocument } from "@/hooks/useAnalyzeDocument";
+import { useConversation } from "@/hooks/useConversation";
 import { saveAnalysisToStorage, getRecentDocumentsFromStorage, getStoredAnalysisById, deleteAnalysisFromStorage } from "@/lib/storage";
+import { toast } from "sonner";
+
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const Index = () => {
-  const { analysis, documentText, setAnalysis, setDocumentText, analyze, isAnalyzing, reset, progress } = useAnalyzeDocument();
+  const { analysis, documentText, setAnalysis, setDocumentText, analyze, isAnalyzing, reset, progress, error } = useAnalyzeDocument();
+  const { messages, ask, isResponding, clear } = useConversation(documentText, analysis?.persona);
   const [recentDocs, setRecentDocs] = useState<RecentDocument[]>([]);
-  const [showSidebar] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const isMobile = useIsMobile();
+
+  // Phase 19: Error reporting
+  useEffect(() => {
+    if (error) {
+      toast.error(error.message || "An unexpected error occurred during analysis.");
+    }
+  }, [error]);
 
   useEffect(() => {
     setRecentDocs(getRecentDocumentsFromStorage());
   }, []);
+
   useEffect(() => {
     if (analysis && !analysis.id.startsWith("sample-")) {
       saveAnalysisToStorage(analysis, documentText);
@@ -46,6 +64,7 @@ const Index = () => {
     if (stored) {
       setAnalysis(stored.analysis);
       setDocumentText(stored.documentText);
+      if (isMobile) setIsMobileMenuOpen(false);
     }
   };
 
@@ -57,29 +76,61 @@ const Index = () => {
     }
   };
 
+  const sidebarContent = (
+    <HistorySidebar
+      activeId={analysis?.id ?? null}
+      documents={recentDocs}
+      onNewDocument={() => {
+        reset();
+        if (isMobile) setIsMobileMenuOpen(false);
+      }}
+      onSelect={handleSelectRecent}
+      onDelete={handleDeleteRecent}
+    />
+  );
+
   return (
     <div className="flex h-screen flex-col bg-background text-foreground overflow-hidden">
-      <TopNav />
+      <TopNav onMenuClick={() => setIsMobileMenuOpen(true)} />
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left sidebar */}
-        {showSidebar && (
-          <aside className="w-[300px] shrink-0 border-r border-border h-full overflow-hidden bg-[hsl(var(--sidebar-bg))]">
-            <HistorySidebar
-              activeId={analysis?.id ?? null}
-              documents={recentDocs}
-              onNewDocument={reset}
-              onSelect={handleSelectRecent}
-              onDelete={handleDeleteRecent}
-            />
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Mobile Sidebar (Sheet) */}
+        {isMobile && (
+          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+            <SheetContent side="left" className="p-0 w-[300px] border-r-0">
+              {sidebarContent}
+            </SheetContent>
+          </Sheet>
+        )}
+
+        {/* Desktop Sidebar */}
+        {!isMobile && (
+          <aside
+            className={cn(
+              "relative shrink-0 border-r border-border h-full bg-[hsl(var(--sidebar-bg))] transition-all duration-300 ease-in-out",
+              isCollapsed ? "w-0" : "w-[280px]"
+            )}
+          >
+            <div className={cn(
+              "h-full w-[280px] transition-opacity duration-200",
+              isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"
+            )}>
+              {sidebarContent}
+            </div>
+
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="absolute -right-3 top-20 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition-transform hover:scale-110 hover:text-foreground"
+            >
+              {isCollapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
+            </button>
           </aside>
         )}
 
-        {/* Main content area */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-6xl px-6 py-8 sm:px-10 lg:py-12">
+        <main className="flex-1 h-full overflow-hidden">
+          <div className="h-full flex flex-col mx-auto max-w-7xl px-4 py-4 sm:px-8 sm:py-6 overflow-hidden">
             {!analysis ? (
-              <div className="flex min-h-[70vh] items-center justify-center">
+              <div className="flex flex-1 items-center justify-center overflow-y-auto">
                 <UploadCard
                   isAnalyzing={isAnalyzing}
                   progress={progress}
@@ -87,20 +138,24 @@ const Index = () => {
                 />
               </div>
             ) : (
-              <div className="space-y-8">
+              <div className="flex-1 flex flex-col min-h-0 space-y-4 sm:space-y-6">
                 <ResultsHeader analysis={analysis} onBack={reset} />
 
-                <div className="grid gap-8 xl:grid-cols-[1fr_420px]">
-                  <div className="min-w-0">
+                <div className="flex-1 grid gap-6 xl:grid-cols-[1fr_420px] min-h-0 overflow-hidden">
+                  <div className="flex flex-col min-h-0 overflow-hidden">
                     <ExplanationTabs analysis={analysis} documentText={documentText} />
                   </div>
-                  <div className="min-w-0 xl:sticky xl:top-0">
+                  <div className="hidden xl:flex flex-col min-h-0 overflow-hidden">
                     <DocumentPreview clauses={analysis.preview} />
                   </div>
                 </div>
 
-                <ResultsBottomBar analysis={analysis} />
-                <FeedbackBar analysisId={analysis.id} />
+                <div className="shrink-0 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <ResultsBottomBar analysis={analysis} />
+                  <div className="hidden md:block">
+                    <FeedbackBar analysisId={analysis.id} />
+                  </div>
+                </div>
               </div>
             )}
           </div>

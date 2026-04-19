@@ -1,7 +1,7 @@
 import { useCallback, useState, useEffect } from "react";
 import type { QAEntry } from "@/types/lexiguide";
 
-export function useConversation(documentText?: string) {
+export function useConversation(documentText?: string, persona: string = "user") {
   const [messages, setMessages] = useState<QAEntry[]>([]);
   const [isResponding, setIsResponding] = useState(false);
 
@@ -34,7 +34,7 @@ export function useConversation(documentText?: string) {
         content: m.content
       }));
 
-      const response = await chatAboutDocument(trimmed, documentText, history);
+      const response = await chatAboutDocument(trimmed, documentText, history, persona);
 
       setMessages((prev) =>
         prev.map((m) =>
@@ -69,7 +69,7 @@ export function useConversation(documentText?: string) {
 
   useEffect(() => {
     clear();
-  }, [documentText, clear]);
+  }, [documentText, persona, clear]);
 
   return { messages, ask, isResponding, clear };
 }

@@ -19,21 +19,29 @@ export type ChatResponse = z.infer<typeof ChatResponseSchema>;
 export async function chatAboutDocument(
   question: string,
   documentText: string,
-  history: { role: "user" | "assistant"; content: string }[]
+  history: { role: "user" | "assistant"; content: string }[],
+  persona: string = "user"
 ): Promise<ChatResponse> {
   const model = getModel();
   const structuredModel = model.withStructuredOutput(ChatResponseSchema);
 
   const prompt = ChatPromptTemplate.fromMessages([
-    ["system", `You are a legal document assistant. Answer the user's question based ONLY on the document provided below.
+    ["system", `You are a helpful and intelligent legal document assistant. 
     
-If the answer is not in the document, say: "I couldn't find information about this in the document."
+Your goal is to explain the provided document to the user, who is viewing it as a ${persona.toUpperCase()}.
+    
+1. Tone: Professional, friendly, and protective of the user's interests.
+2. Grounding: Answer based ONLY on the provided document text. 
+3. Reasoning: If a user asks a question that isn't EXPLICITLY in the text (e.g., "Can I do X?"), look at the existing clauses and explain the implications for a ${persona}.
+4. Greetings: If the user says "Hello" or "How are you", respond politely and invite them to ask about the document.
+5. Missing Info: If truly NO information exists, say: "The document doesn't mention this explicitly, but as a ${persona}, you should check [Relevant Section] for related rules."
+
 Always cite specific clauses in the references field.
 
 DOCUMENT TEXT:
-\\"\\"\\"
+\"\"\"
 ${documentText}
-\\"\\"\\"`],
+\"\"\"`],
     new MessagesPlaceholder("history"),
     ["human", "{input}"],
   ]);

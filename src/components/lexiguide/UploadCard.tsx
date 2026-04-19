@@ -29,7 +29,7 @@ function formatSize(bytes: number) {
 
 export function UploadCard({ isAnalyzing, progress, onAnalyze }: Props) {
   const [file, setFile] = useState<File | null>(null);
-  const [persona, setPersona] = useState<Persona | "">("");
+  const [persona, setPersona] = useState<Persona>("tenant");
   const [language, setLanguage] = useState<Language>("english");
   const [riskFocused, setRiskFocused] = useState(true);
   const [dragOver, setDragOver] = useState(false);
@@ -165,7 +165,7 @@ export function UploadCard({ isAnalyzing, progress, onAnalyze }: Props) {
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
           <Button
             onClick={submit}
-            disabled={!canAnalyze && !isAnalyzing}
+            disabled={!canAnalyze || isAnalyzing}
             className="h-11 min-w-[200px] bg-primary text-primary-foreground hover:bg-primary/90"
           >
             {isAnalyzing ? (

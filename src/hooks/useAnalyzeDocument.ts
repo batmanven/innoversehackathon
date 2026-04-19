@@ -1,6 +1,8 @@
 import { useCallback, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import type { DocumentAnalysis, Language, Persona } from "@/types/lexiguide";
+import { extractText } from "@/lib/documentParser";
+import { analyzeDocumentWithAI } from "@/lib/analyzeWithAI";
 
 export interface AnalyzeInput {
   file: File;
@@ -18,27 +20,29 @@ export function useAnalyzeDocument() {
 
   const mutation = useMutation({
     mutationFn: async (input: AnalyzeInput): Promise<DocumentAnalysis> => {
+      console.log("🚀 Starting analysis pipeline for:", input.file.name);
+      console.time("analysis-pipeline");
+      
       try {
-        if (!input.file) {
-          throw new Error("No file provided for analysis.");
-        }
-
+        // 1. Text Extraction
         setProgress("extracting");
-        const { extractText } = await import("@/lib/documentParser");
         const { text } = await extractText(input.file);
         setDocumentText(text);
+        console.log("📄 Extraction complete. Text length:", text.length);
 
+        // 2. AI Analysis
         setProgress("analyzing");
-        const { analyzeDocumentWithAI } = await import("@/lib/analyzeWithAI");
         const result = await analyzeDocumentWithAI(
           text,
           input.persona,
           input.language,
           input.riskFocused
         );
+        console.log("🤖 AI Analysis complete:", result);
 
+        // 3. Transformation
         setProgress("generating");
-        return {
+        const final: DocumentAnalysis = {
           ...result,
           id: `${Date.now()}`,
           fileName: input.file.name,
@@ -48,6 +52,12 @@ export function useAnalyzeDocument() {
           riskFocused: input.riskFocused,
           uploadedAt: "Just now",
         } as DocumentAnalysis;
+        
+        console.timeEnd("analysis-pipeline");
+        return final;
+      } catch (err) {
+        console.error("❌ Pipeline failure:", err);
+        throw err;
       } finally {
         setProgress(null);
       }

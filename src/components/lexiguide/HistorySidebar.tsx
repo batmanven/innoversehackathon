@@ -97,20 +97,6 @@ export function HistorySidebar({ activeId, documents, onNewDocument, onSelect, o
         </ul>
       </div>
 
-      {/* Footer footer */}
-      <div className="border-t border-border/60 bg-surface-3/30 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-            <p className="text-[10px] font-medium text-muted-foreground tracking-wide uppercase">
-              System ready
-            </p>
-          </div>
-          <p className="text-[10px] tabular-nums text-muted-foreground/60 font-mono">
-            {getStorageStats().count} docs • {getStorageStats().sizeKB} KB
-          </p>
-        </div>
-      </div>
     </aside>
   );
 }

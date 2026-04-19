@@ -21,22 +21,22 @@ function withHighlight(text: string, highlight?: string) {
 
 export function SummaryTab({ summary }: Props) {
   return (
-    <div className="rounded-xl border border-border surface-2 p-6 animate-fade-up">
-      <div className="mb-4 flex items-baseline justify-between">
-        <h2 className="font-display text-lg font-500 text-foreground">Executive Summary</h2>
-        <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
+    <div className="rounded-xl border border-border surface-2 p-5 animate-fade-up">
+      <div className="mb-3.5 flex items-baseline justify-between">
+        <h2 className="font-display text-base font-500 text-foreground">Executive Summary</h2>
+        <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground/60">
           {summary.bullets.length} key points
         </span>
       </div>
 
-      <p className="mb-5 rounded-md border-l-2 border-primary/60 bg-primary/[0.04] px-4 py-3 text-[15px] leading-relaxed text-foreground/90">
+      <p className="mb-4 rounded-md border-l-2 border-primary/50 bg-primary/[0.03] px-3.5 py-2.5 text-[14px] leading-relaxed text-foreground/90">
         {summary.headline}
       </p>
 
-      <ul className="space-y-3.5">
+      <ul className="grid gap-2.5 sm:grid-cols-1">
         {summary.bullets.map((b, i) => (
-          <li key={i} className="flex gap-3 text-sm leading-relaxed text-foreground/85">
-            <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/70" />
+          <li key={i} className="flex gap-2.5 text-[13px] leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary/60" />
             <span>{withHighlight(b.text, b.highlight)}</span>
           </li>
         ))}

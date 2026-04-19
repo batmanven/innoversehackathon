@@ -28,7 +28,7 @@ export function getModel(temperature: number = 0.3): ChatGoogleGenerativeAI {
   // We re-initialize if temperature differs (though usually we stick to a default)
   if (!modelInstance) {
     modelInstance = new ChatGoogleGenerativeAI({
-      modelName: "gemini-2.0-flash",
+      model: "gemini-flash-latest",
       maxOutputTokens: 8192,
       temperature: temperature,
       apiKey: import.meta.env.VITE_GOOGLE_API_KEY,
