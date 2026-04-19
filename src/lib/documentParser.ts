@@ -45,7 +45,7 @@ function cleanText(raw: string): string {
 // ─── PDF Extraction ─────────────────────────────────────────────────────────
 
 async function extractFromPDF(file: File): Promise<ExtractionResult> {
-  // Dynamic import to avoid loading pdf-parse at startup
+  // Use WebPDFLoader for browser-compatible PDF parsing
   const { WebPDFLoader } = await import(
     "@langchain/community/document_loaders/web/pdf"
   );

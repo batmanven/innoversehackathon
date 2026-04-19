@@ -13,7 +13,4 @@ export default defineConfig(({ mode }) => ({
   define: {
     "process.env": {},
   },
-  optimizeDeps: {
-    exclude: ["pdf-parse"],
-  },
 }));
