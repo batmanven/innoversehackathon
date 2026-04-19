@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TopNav } from "@/components/lexiguide/TopNav";
 import { HistorySidebar } from "@/components/lexiguide/HistorySidebar";
 import { UploadCard } from "@/components/lexiguide/UploadCard";
@@ -6,14 +6,26 @@ import { ResultsHeader } from "@/components/lexiguide/ResultsHeader";
 import { ExplanationTabs } from "@/components/lexiguide/ExplanationTabs";
 import { DocumentPreview } from "@/components/lexiguide/DocumentPreview";
 import { ResultsBottomBar } from "@/components/lexiguide/ResultsBottomBar";
+import { FeedbackBar } from "@/components/lexiguide/FeedbackBar";
 
 import type { Language, Persona, RecentDocument } from "@/types/lexiguide";
-import { SAMPLE_ANALYSIS } from "@/data/mock";
 import { useAnalyzeDocument } from "@/hooks/useAnalyzeDocument";
+import { saveAnalysisToStorage, getRecentDocumentsFromStorage, getStoredAnalysisById, deleteAnalysisFromStorage } from "@/lib/storage";
 
 const Index = () => {
-  const { analysis, documentText, setAnalysis, analyze, isAnalyzing, reset } = useAnalyzeDocument();
+  const { analysis, documentText, setAnalysis, setDocumentText, analyze, isAnalyzing, reset, progress } = useAnalyzeDocument();
+  const [recentDocs, setRecentDocs] = useState<RecentDocument[]>([]);
   const [showSidebar] = useState(true);
+
+  useEffect(() => {
+    setRecentDocs(getRecentDocumentsFromStorage());
+  }, []);
+  useEffect(() => {
+    if (analysis && !analysis.id.startsWith("sample-")) {
+      saveAnalysisToStorage(analysis, documentText);
+      setRecentDocs(getRecentDocumentsFromStorage());
+    }
+  }, [analysis, documentText]);
 
   const handleAnalyze = (input: {
     file: File;
@@ -29,27 +41,20 @@ const Index = () => {
     });
   };
 
-  const handleSample = (input: { persona: Persona; language: Language; riskFocused: boolean }) => {
-    analyze({
-      file: null,
-      persona: input.persona,
-      language: input.language,
-      riskFocused: input.riskFocused,
-      useSample: true,
-      fileName: SAMPLE_ANALYSIS.fileName,
-      fileSize: SAMPLE_ANALYSIS.fileSize,
-    });
+  const handleSelectRecent = (doc: RecentDocument) => {
+    const stored = getStoredAnalysisById(doc.id);
+    if (stored) {
+      setAnalysis(stored.analysis);
+      setDocumentText(stored.documentText);
+    }
   };
 
-  const handleSelectRecent = (doc: RecentDocument) => {
-    // Mocked: any selection loads the sample analysis with the doc's persona/name.
-    setAnalysis({
-      ...SAMPLE_ANALYSIS,
-      id: doc.id,
-      fileName: doc.name,
-      persona: doc.persona,
-      uploadedAt: doc.uploadedAt,
-    });
+  const handleDeleteRecent = (id: string) => {
+    deleteAnalysisFromStorage(id);
+    setRecentDocs(getRecentDocumentsFromStorage());
+    if (analysis?.id === id) {
+      reset();
+    }
   };
 
   return (
@@ -62,8 +67,10 @@ const Index = () => {
           <aside className="w-[300px] shrink-0 border-r border-border h-full overflow-hidden bg-[hsl(var(--sidebar-bg))]">
             <HistorySidebar
               activeId={analysis?.id ?? null}
+              documents={recentDocs}
               onNewDocument={reset}
               onSelect={handleSelectRecent}
+              onDelete={handleDeleteRecent}
             />
           </aside>
         )}
@@ -75,8 +82,8 @@ const Index = () => {
               <div className="flex min-h-[70vh] items-center justify-center">
                 <UploadCard
                   isAnalyzing={isAnalyzing}
+                  progress={progress}
                   onAnalyze={handleAnalyze}
-                  onUseSample={handleSample}
                 />
               </div>
             ) : (
@@ -93,6 +100,7 @@ const Index = () => {
                 </div>
 
                 <ResultsBottomBar analysis={analysis} />
+                <FeedbackBar analysisId={analysis.id} />
               </div>
             )}
           </div>

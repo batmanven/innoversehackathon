@@ -1,6 +1,5 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import type { QAEntry } from "@/types/lexiguide";
-import { pickMockAnswer } from "@/data/mock";
 
 export function useConversation(documentText?: string) {
   const [messages, setMessages] = useState<QAEntry[]>([]);
@@ -15,7 +14,7 @@ export function useConversation(documentText?: string) {
       role: "user",
       content: trimmed,
     };
-    
+
     const pendingId = `a-${Date.now() + 1}`;
     const pendingMsg: QAEntry = {
       id: pendingId,
@@ -23,17 +22,16 @@ export function useConversation(documentText?: string) {
       content: "",
       pending: true,
     };
-    
+
     setMessages((prev) => [...prev, userMsg, pendingMsg]);
     setIsResponding(true);
 
     try {
       const { chatAboutDocument } = await import("@/lib/chatWithAI");
-      
-      // Prepare history (excluding the current user/pending messages)
-      const history = messages.map(m => ({ 
-        role: m.role, 
-        content: m.content 
+
+      const history = messages.map(m => ({
+        role: m.role,
+        content: m.content
       }));
 
       const response = await chatAboutDocument(trimmed, documentText, history);
@@ -41,12 +39,12 @@ export function useConversation(documentText?: string) {
       setMessages((prev) =>
         prev.map((m) =>
           m.id === pendingId
-            ? { 
-                ...m, 
-                content: response.answer, 
-                references: response.references, 
-                pending: false 
-              }
+            ? ({
+              ...m,
+              content: response.answer,
+              references: response.references,
+              pending: false
+            } as QAEntry)
             : m
         )
       );
@@ -54,11 +52,11 @@ export function useConversation(documentText?: string) {
       setMessages((prev) =>
         prev.map((m) =>
           m.id === pendingId
-            ? { 
-                ...m, 
-                content: "I'm sorry, I encountered an error while analyzing the document.", 
-                pending: false 
-              }
+            ? {
+              ...m,
+              content: "I'm sorry, I encountered an error while analyzing the document.",
+              pending: false
+            }
             : m
         )
       );
@@ -68,6 +66,10 @@ export function useConversation(documentText?: string) {
   }, [documentText, messages]);
 
   const clear = useCallback(() => setMessages([]), []);
+
+  useEffect(() => {
+    clear();
+  }, [documentText, clear]);
 
   return { messages, ask, isResponding, clear };
 }

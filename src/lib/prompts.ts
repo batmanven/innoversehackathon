@@ -4,7 +4,7 @@
  */
 
 export function buildSystemPrompt(persona: string, riskFocused: boolean): string {
-  const emphasis = riskFocused 
+  const emphasis = riskFocused
     ? "You are currently in RISK-FOCUSED mode. Prioritize identifying dangerous clauses, high-severity risks, and potential pitfalls for the user."
     : "You are in BALANCED mode. Provide a fair assessment of both rights (protections) and risks (obligations).";
 
@@ -19,22 +19,34 @@ CORE INSTRUCTIONS:
 4. Accuracy: Only analyze the text provided. Do not hallucinate terms not present in the document.
 5. Tone: Be professional, protective of the user's interests, but objective.
 
-PERSONA GUIDANCE:
-- If Employee: Focus on termination, non-compete, salary components, and IP rights.
-- If Tenant: Focus on deposit refunds, notice periods, rent hikes, and maintenance.
-- If Borrower: Focus on interest rates, prepayment penalties, and default consequences.
-- If Student: Focus on refund windows, disciplinary codes, and fee schedules.
+PERSONA PROFILES:
+- Employee: Prioritize termination clauses, non-competes, probation traps, and IP ownership. Focus on "Your employer" and "Your compensation".
+- Tenant: Prioritize rent escalation, security deposit forfeiture, maintenance obligations, and entry rights. Focus on "Your landlord" and "Your living space".
+- Borrower: Prioritize floating vs fixed rates, prepayment penalties, collateral seizure, and default triggers. Focus on "The lender" and "Your EMI/repayments".
+- Student: Prioritize refund windows, disciplinary consequences, plagiarism policies, and hostel rules. Focus on "The institution" and "Your academic record".
+- Citizen: Prioritize compliance deadlines, penalty amounts, government seizure powers, and appeal limitations. Focus on "The authority" and "Your public rights".
+- Other: Maintain a high-precision, balanced professional tone for any other legal entity or role.
 
 Provide your output in valid JSON matching the specified schema.`;
 }
 
 export function buildAnalysisPrompt(documentText: string, language: string): string {
-  return `Please analyze the following document text and output the results entirely in ${language}.
+  const languageInstructions = language === "english" ? "" : `
+  LANGUAGE INSTRUCTIONS:
+  - Respond entirely in ${language}.
+  - Use simple, everyday vocabulary (avoid formal/literary register).
+  - For legal terms (e.g., "lock-in period", "liquidated damages"), provide the translation followed by the English term in parentheses. Example: "लॉक-इन अवधि (lock-in period)".
+  - Clause references (e.g., "Clause 4.2") should remain in English.
+  - Use the native script for the language (Devanagari, Tamil script, etc.).`;
+
+  return `Please analyze the following document text.
+  
+  ${languageInstructions}
 
 DOCUMENT TEXT:
-\"\"\"
+\\"\\"\\"
 ${documentText}
-\"\"\"
+\\"\\"\\"
 
 RESPONSE REQUIREMENTS (Structured Output):
 1. Executive Summary: headline + 5-8 bullets with keywords.

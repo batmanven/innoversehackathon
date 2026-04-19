@@ -11,7 +11,6 @@ export default defineConfig(({ mode }) => ({
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
   },
   define: {
-    // Some LangChain deps check for process.env
     "process.env": {},
   },
   optimizeDeps: {

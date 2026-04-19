@@ -31,9 +31,9 @@ If the answer is not in the document, say: "I couldn't find information about th
 Always cite specific clauses in the references field.
 
 DOCUMENT TEXT:
-\"\"\"
+\\"\\"\\"
 ${documentText}
-\"\"\"`],
+\\"\\"\\"`],
     new MessagesPlaceholder("history"),
     ["human", "{input}"],
   ]);
@@ -41,7 +41,7 @@ ${documentText}
   const chain = prompt.pipe(structuredModel);
 
   // Convert history to LangChain format
-  const chatHistory = history.map(m => 
+  const chatHistory = history.map(m =>
     m.role === "user" ? new HumanMessage(m.content) : new AIMessage(m.content)
   );
 

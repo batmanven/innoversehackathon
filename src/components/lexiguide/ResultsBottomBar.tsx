@@ -1,6 +1,7 @@
 import { Download, ShieldAlert, ShieldCheck } from "lucide-react";
 import type { DocumentAnalysis } from "@/types/lexiguide";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { generateMarkdownReport, downloadAsFile } from "@/lib/exportReport";
+import { toast } from "sonner";
 
 interface Props {
   analysis: DocumentAnalysis;
@@ -9,6 +10,13 @@ interface Props {
 export function ResultsBottomBar({ analysis }: Props) {
   const high = analysis.risks.filter((r) => r.severity === "high").length;
   const rights = analysis.rights.length;
+
+  const handleDownload = () => {
+    const markdown = generateMarkdownReport(analysis);
+    const filename = `${analysis.fileName.split(".")[0]}_analysis.md`;
+    downloadAsFile(markdown, filename);
+    toast.success("Analysis report downloaded");
+  };
 
   return (
     <div className="mt-6 flex flex-col items-start justify-between gap-3 rounded-lg border border-border surface-2 px-4 py-3 sm:flex-row sm:items-center">
@@ -24,19 +32,14 @@ export function ResultsBottomBar({ analysis }: Props) {
         </span>
       </div>
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            type="button"
-            disabled
-            className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-md border border-border-strong bg-background px-3 py-1.5 text-xs text-muted-foreground opacity-70"
-          >
-            <Download className="h-3.5 w-3.5" />
-            Download explanation
-          </button>
-        </TooltipTrigger>
-        <TooltipContent side="top">Coming soon</TooltipContent>
-      </Tooltip>
+      <button
+        type="button"
+        onClick={handleDownload}
+        className="inline-flex items-center gap-2 rounded-md bg-foreground px-4 py-1.5 text-xs font-semibold text-background transition-all hover:opacity-90 active:scale-[0.98]"
+      >
+        <Download className="h-3.5 w-3.5" />
+        Download Report as Markdown
+      </button>
     </div>
   );
 }

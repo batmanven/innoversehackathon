@@ -6,16 +6,17 @@ import { Switch } from "@/components/ui/switch";
 import { PersonaSelector } from "./PersonaSelector";
 import { LanguageSelector } from "./LanguageSelector";
 import type { Language, Persona } from "@/types/lexiguide";
+import type { AnalysisProgress } from "@/hooks/useAnalyzeDocument";
 
 interface Props {
   isAnalyzing: boolean;
+  progress: AnalysisProgress;
   onAnalyze: (input: {
     file: File;
     persona: Persona;
     language: Language;
     riskFocused: boolean;
   }) => void;
-  onUseSample: (input: { persona: Persona; language: Language; riskFocused: boolean }) => void;
 }
 
 const ACCEPT = ".pdf,.docx,.doc,.txt";
@@ -26,7 +27,7 @@ function formatSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function UploadCard({ isAnalyzing, onAnalyze, onUseSample }: Props) {
+export function UploadCard({ isAnalyzing, progress, onAnalyze }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [persona, setPersona] = useState<Persona | "">("");
   const [language, setLanguage] = useState<Language>("english");
@@ -161,26 +162,22 @@ export function UploadCard({ isAnalyzing, onAnalyze, onUseSample }: Props) {
         </div>
 
         {/* Actions */}
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <button
-            type="button"
-            onClick={() => onUseSample({ persona: (persona || "tenant") as Persona, language, riskFocused })}
-            disabled={isAnalyzing}
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-primary disabled:opacity-50"
-          >
-            <Sparkle className="h-3.5 w-3.5" />
-            Try with a sample document
-          </button>
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
           <Button
             onClick={submit}
             disabled={!canAnalyze && !isAnalyzing}
-            className="h-11 min-w-[180px] bg-primary text-primary-foreground hover:bg-primary/90"
+            className="h-11 min-w-[200px] bg-primary text-primary-foreground hover:bg-primary/90"
           >
             {isAnalyzing ? (
-              <>
+              <div className="flex items-center gap-2.5 animate-pulse">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Analyzing…
-              </>
+                <span>
+                  {progress === "extracting" && "Extracting text…"}
+                  {progress === "analyzing" && "Analyzing clauses…"}
+                  {progress === "generating" && "Generating results…"}
+                  {!progress && "Analyzing…"}
+                </span>
+              </div>
             ) : (
               "Analyze document"
             )}
